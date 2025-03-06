@@ -14,5 +14,5 @@ sh build_docker.sh
 ```
 sh run_docker.sh
 cd /ros2_ws/src/data_extractor/
-python3 extract_from_rosbag.py -rb [ROSBAG_PATH]
+python3 extract_from_rosbag.py
 ```
