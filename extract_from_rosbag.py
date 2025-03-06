@@ -9,6 +9,7 @@ import os
 import datetime
 import ros2_numpy as rnp
 import numpy as np
+
 class MainSubscriber(Node):
 
     def __init__(self):
@@ -97,8 +98,6 @@ class MainSubscriber(Node):
         self.get_logger().info(f'Saved point cloud to {filename}')
         
         self.point_cloud_counter += 1
-        
-
 
 def main(args=None):
     rclpy.init(args=args)

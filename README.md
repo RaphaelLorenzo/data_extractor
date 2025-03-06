@@ -11,7 +11,15 @@ sh build_docker.sh
 ```
 
 ## Running for rosbags
+On one side replay the rosbag :
 ```
+sh run_docker.sh
+cd /ros2_ws/src/data_extractor/
+ros2 bag play ./data/rosbag2_pepr_dummy/rosbag2_2025_03_04-13_59_55_0.db3
+```
+
+On the other side, run the script to extract the data :
+``` 
 sh run_docker.sh
 cd /ros2_ws/src/data_extractor/
 python3 extract_from_rosbag.py
