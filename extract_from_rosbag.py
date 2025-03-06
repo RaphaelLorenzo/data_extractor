@@ -88,7 +88,7 @@ class MainSubscriber(Node):
         # Save the point cloud
         #timestamp = "ts_{}_{}".format(msg.header.stamp.sec, msg.header.stamp.nanosec) # do not use, prefer counter
     
-        filename = os.path.join(self.point_cloud_save_dir, "%06d.bin".format(self.point_cloud_counter))
+        filename = os.path.join(self.point_cloud_save_dir, "{:06d}.bin".format(self.point_cloud_counter))
         full_array.tofile(filename)
         self.get_logger().info(f'Saved point cloud to {filename}')
         
