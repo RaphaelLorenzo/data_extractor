@@ -26,12 +26,17 @@ class MainSubscriber(Node):
         # Image subscription
         self.image_subscription = self.create_subscription(
             Image,
-            '/camera/color/raw_images',
+            '/camera/color/image_raw',
             self.image_callback,
             10)
         
         # Create CV bridge for converting ROS images to OpenCV format
         self.bridge = CvBridge()
+        
+        # Create directory for saving images if it doesn't exist
+        self.image_save_dir = 'saved_images' 
+        os.makedirs(self.image_save_dir, exist_ok=True) # do not do it here, because in the docker it will be protected
+        self.image_counter = 0
         
         # Point cloud subscription
         self.point_cloud_subscription = self.create_subscription(
@@ -40,13 +45,10 @@ class MainSubscriber(Node):
             self.point_cloud_callback,
             10)
         
-        self.point_cloud_save_dir = 'saved_point_clouds'
-        os.makedirs(self.point_cloud_save_dir, exist_ok=True)
+        self.point_cloud_save_dir = 'saved_point_clouds' 
+        os.makedirs(self.point_cloud_save_dir, exist_ok=True) # do not do it here, because in the docker it will be protected
         self.point_cloud_counter = 0
-        
-        # Create directory for saving images if it doesn't exist
-        self.save_dir = 'saved_images'
-        os.makedirs(self.save_dir, exist_ok=True)
+
 
     def camera_info_callback(self, msg: CameraInfo):
         self.get_logger().info(f"Got camera info | frame_id: {msg.header.frame_id} | timestamp: {msg.header.stamp.sec}.{msg.header.stamp.nanosec}")
@@ -58,12 +60,14 @@ class MainSubscriber(Node):
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             
             # Generate a filename with timestamp
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-            filename = f"{self.save_dir}/image_{timestamp}.jpg"
+            timestamp = "ts_{}_{}".format(msg.header.stamp.sec, msg.header.stamp.nanosec)
+            filename = os.path.join(self.image_save_dir, "{:06d}_{}.png".format(self.image_counter, timestamp))
             
             # Save the image
             cv2.imwrite(filename, cv_image)
             self.get_logger().info(f'Saved image to {filename}')
+            
+            self.image_counter += 1
             
         except Exception as e:
             self.get_logger().error(f'Error processing image: {str(e)}')
@@ -79,16 +83,16 @@ class MainSubscriber(Node):
         intensity_array = pcl_array['intensity'] # array of shape (N, 1) / uint16
         intensity_array = intensity_array.astype(np.float32) / 1000.0
         
-        print("Got xyz : ", xyz_array.shape, xyz_array.dtype)
-        print("Got intensity : ", intensity_array.shape, intensity_array.dtype)
+        # print("Got xyz : ", xyz_array.shape, xyz_array.dtype)
+        # print("Got intensity : ", intensity_array.shape, intensity_array.dtype)
         
         full_array = np.concatenate([xyz_array, intensity_array], axis=1)
-        print("Got full array : ", full_array.shape, full_array.dtype)
+        # print("Got full array : ", full_array.shape, full_array.dtype)
         
         # Save the point cloud
-        #timestamp = "ts_{}_{}".format(msg.header.stamp.sec, msg.header.stamp.nanosec) # do not use, prefer counter
+        timestamp = "ts_{}_{}".format(msg.header.stamp.sec, msg.header.stamp.nanosec) # do not use, prefer counter
     
-        filename = os.path.join(self.point_cloud_save_dir, "{:06d}.bin".format(self.point_cloud_counter))
+        filename = os.path.join(self.point_cloud_save_dir, "{:06d}_{}.bin".format(self.point_cloud_counter, timestamp))
         full_array.tofile(filename)
         self.get_logger().info(f'Saved point cloud to {filename}')
         

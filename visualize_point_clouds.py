@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 pcls = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser("./saved_point_clouds")) for f in fn if f.endswith(".bin")]
 pcls.sort()
@@ -17,7 +18,7 @@ for i in range(len(pcls)):
     
     print(xyzi.min(axis=0), xyzi.max(axis=0))
     
-    ax.scatter(xyzi[:, 0], xyzi[:, 1], c = xyzi[:, 3], cmap='viridis', s = 0.5)
+    ax.scatter(xyzi[:, 0], xyzi[:, 1], c=xyzi[:, 2], cmap='viridis', s=0.5, vmin=-2, vmax=3)
     
     ax.set_xlim(-10, 10)
     ax.set_ylim(-10, 10)
