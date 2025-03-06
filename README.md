@@ -25,7 +25,10 @@ cd /ros2_ws/src/data_extractor/
 python3 extract_from_rosbag.py
 ```
 
-## After recording, you get back ownership of the files and directories from the user
+## After recording
+
+Get back ownership of the files and directories from the user
+
 ```
 sudo chmod a+rwx ./saved_images/
 sudo chmod a+rwx ./saved_images/*
