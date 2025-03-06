@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import os
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cv2
+import imageio
+from PIL import Image
+import tempfile
 
 # Load image paths
 images = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser("./saved_images")) for f in fn if f.endswith(".png")]
@@ -17,7 +20,7 @@ pcls = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser("./save
 pcls.sort()
 
 # Create a figure with 3 subplots: image, point cloud, and scale weight history
-fig = plt.figure(figsize=(18, 12))
+fig = plt.figure(figsize=(9, 6))
 ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=1, rowspan=1)  # Image
 ax2 = plt.subplot2grid((2, 2), (0, 1), colspan=1, rowspan=1)  # Point cloud
 ax3 = plt.subplot2grid((2, 2), (1, 0), colspan=2, rowspan=1)  # Scale weight history
@@ -32,7 +35,14 @@ scale_weight_history = []
 window_size = 3  # Size of the moving average window
 threshold = 0.01  # Threshold for detecting significant changes
 
-for i in range(len(images)):
+# Create a temporary directory to store frames
+# temp_dir = tempfile.mkdtemp()
+# print(f"Saving frames to temporary directory: {temp_dir}")
+# frame_files = []
+
+start = 0
+end = 500
+for i in range(start,end): #range(len(images)):
     
     # Find corresponding scale weight and point cloud based on progression
     progression_prop = i / len(images)
@@ -69,7 +79,7 @@ for i in range(len(images)):
     # Display point cloud
     xyzi = np.fromfile(pcl_path, dtype=np.float32).reshape(-1, 4)
     print(f"Point cloud min/max: {xyzi.min(axis=0)}, {xyzi.max(axis=0)}")
-    sub_xyzi = xyzi[::8, :] # skip some points to avoid overplotting
+    sub_xyzi = xyzi[::2, :] # skip some points to avoid overplotting
     
     scatter = ax2.scatter(sub_xyzi[:, 0], sub_xyzi[:, 1], c=sub_xyzi[:, 2], cmap='viridis', s=0.5, vmin=-2, vmax=3)
     ax2.set_xlim(-6, 6)
@@ -78,7 +88,7 @@ for i in range(len(images)):
     ax2.set_aspect('equal')
     
     # Plot scale weight history with change detection
-    x_values = list(range(max(0, i-N+1), i+1))
+    x_values = list(range(max(start, i-N+1), i+1))
     
     # Calculate moving averages if we have enough data
     if len(scale_weight_history) >= window_size:
@@ -117,6 +127,27 @@ for i in range(len(images)):
     ax3.grid(True)
     
     plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout to make room for the suptitle
+    
+    # # Save the current figure as an image
+    # frame_filename = os.path.join(temp_dir, f"frame_{i:04d}.png")
+    # plt.savefig(frame_filename, dpi=100)
+    # frame_files.append(frame_filename)
+    
     plt.pause(0.05)
 
 plt.close(fig)
+
+# # Create a GIF from the saved frames
+# print("Creating GIF animation...")
+# output_gif = "visualization_animation.gif"
+# with imageio.get_writer(output_gif, mode='I', fps=15) as writer:
+#     for frame_file in frame_files:
+#         image = imageio.imread(frame_file)
+#         writer.append_data(image)
+
+# print(f"GIF animation saved to {output_gif}")
+
+# # Optional: Clean up temporary files
+# import shutil
+# shutil.rmtree(temp_dir)
+# print("Temporary files cleaned up")
