@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 import cv2
 from cv_bridge import CvBridge
@@ -49,7 +49,16 @@ class MainSubscriber(Node):
         self.point_cloud_save_dir = 'saved_point_clouds' 
         os.makedirs(self.point_cloud_save_dir, exist_ok=True) # do not do it here, because in the docker it will be protected
         self.point_cloud_counter = 0
-
+        
+        # Scale weight (Float32) subscription
+        self.scale_weight_subscription = self.create_subscription(
+            Float32,
+            '/microros/m5_scales_kit_weight',
+            self.scale_weight_callback,
+            10) 
+        self.scale_weight_counter = 0
+        self.scale_weight_save_dir = 'saved_scale_weights' 
+        os.makedirs(self.scale_weight_save_dir, exist_ok=True) # do not do it here, because in the docker it will be protected
 
     def camera_info_callback(self, msg: CameraInfo):
         self.get_logger().info(f"Got camera info | frame_id: {msg.header.frame_id} | timestamp: {msg.header.stamp.sec}.{msg.header.stamp.nanosec}")
@@ -98,6 +107,16 @@ class MainSubscriber(Node):
         self.get_logger().info(f'Saved point cloud to {filename}')
         
         self.point_cloud_counter += 1
+        
+    def scale_weight_callback(self, msg: Float32):  
+        self.get_logger().info(f"Got scale weight | value: {msg.data}")
+        
+        # timestamp = "ts_{}_{}".format(msg.header.stamp.sec, msg.header.stamp.nanosec) # do not use, prefer counter
+        filename = os.path.join(self.scale_weight_save_dir, "{:06d}.txt".format(self.scale_weight_counter))
+        with open(filename, 'w') as f:
+            f.write(f"{msg.data}\n")
+        
+        self.scale_weight_counter += 1
 
 def main(args=None):
     rclpy.init(args=args)
