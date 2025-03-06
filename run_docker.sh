@@ -26,5 +26,5 @@ if [ $IsRunning -eq "0" ]; then
         -ti ros2_data_extractor
 else
     echo "Docker image is already running. Opening new terminal...";
-    docker exec -ti ros2_data_extractor /bin/bash
+    docker exec -ti ros2_data_extractor /bin/bash -c "cd /ros2_ws/src/data_extractor && /bin/bash"
 fi
