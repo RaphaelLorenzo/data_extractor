@@ -37,3 +37,7 @@ sudo chmod a+rwx ./saved_point_clouds/*
 sudo chmod a+rwx ./saved_scale_weights/
 sudo chmod a+rwx ./saved_scale_weights/*
 ```
+
+## Visualization example
+
+![gifexample](./images/visualization_animation.gif)
